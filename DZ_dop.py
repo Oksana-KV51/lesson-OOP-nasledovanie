@@ -1,62 +1,99 @@
-#1. Создайте базовый класс `Animal`, который будет содержать общие атрибуты (например, `name`, `age`) и
-# методы (`make_sound()`, `eat()`) для всех животных.
-#2. Реализуйте наследование, создав подклассы `Bird`, `Mammal`, и `Reptile`, которые наследуют от класса `Animal`.
-# Добавьте специфические атрибуты и переопределите методы, если требуется (например, различный звук для `make_sound()`).
-#3. Продемонстрируйте полиморфизм: создайте функцию `animal_sound(animals)`, которая принимает список животных и вызывает
-# метод `make_sound()` для каждого животного.
-#4. Используйте композицию для создания класса `Zoo`, который будет содержать информацию о животных и сотрудниках.
-# Должны быть методы для добавления животных и сотрудников в зоопарк.
-#5. Создайте классы для сотрудников, например, `ZooKeeper`, `Veterinarian`, которые могут иметь специфические методы (например,
-# `feed_animal()` для `ZooKeeper` и `heal_animal()` для `Veterinarian`).
-
 #Дополнительно: Попробуйте добавить дополнительные функции в вашу программу, такие как сохранение информации о зоопарке в файл
 # и возможность её загрузки, чтобы у вашего зоопарка было "постоянное состояние" между запусками программы.
 
-class Animal():
+import json
+class Serializable:
+    def to_dict(self):
+        return self.__dict__
+
+def animal_decoder(obj):
+    if "Animal_type" in obj:
+        if obj["Animal_type"] == "Bird":
+            return Bird(obj['name'], obj['age'])
+        elif obj["Animal_type"] == "Mammal":
+            return Mammal(obj['name'], obj['age'])
+        elif obj["Animal_type"] == "Reptile":
+            return Reptile(obj['name'], obj['age'])
+    return obj
+
+
+class Animal(Serializable):
     def __init__(self, name, age):
         self.name = name
         self.age = age
+
     def make_sound(self):
         pass
+
     def eat(self):
         print(f"{self.name} едят")
 
-class Bird(Animal):#птицы
+
+class Bird(Animal):
     def make_sound(self):
         print(f'{self.name} чирикает')
 
 
-class Mammal(Animal): #млекопетающие
+class Mammal(Animal):
     def make_sound(self):
         print(f'{self.name} рычит')
 
 
-class Reptile(Animal): #рептилии
+class Reptile(Animal):
     def make_sound(self):
         print(f'{self.name} шипит')
 
-class Zoo:
+
+class Zoo(Serializable):
     def __init__(self):
         self.animals = []
         self.staff = []
 
     def add_animal(self, animal):
         self.animals.append(animal)
+        self.save_data()  # Save data whenever you add an animal
 
     def add_staff(self, staff_member):
         self.staff.append(staff_member)
+        self.save_data()  # Save data whenever you add a staff member
 
-class ZooStaff:
+    # Method to serialize zoo data to a JSON file
+    def save_data(self):
+        with open('zoo_data.json', 'w', encoding='utf-8') as f:
+            data = {
+                "animals": [animal.to_dict() for animal in self.animals],
+                # Assuming staff can also be serialized in a similar manner
+            }
+            json.dump(data, f, indent=4)
+
+    # Method to load zoo data from a JSON file
+    @classmethod
+    def load_data(cls):
+        try:
+            with open('zoo_data.json', 'r', encoding='utf-8') as f:
+                data = json.load(f, object_hook=animal_decoder)
+                zoo = cls()
+                zoo.animals = data.get("animals", [])
+                # Assuming staff can also be loaded in a similar manner
+                return zoo
+        except FileNotFoundError:
+            return cls()
+
+
+class ZooStaff(Serializable):
     def __init__(self, name):
         self.name = name
+
 
 class ZooKeeper(ZooStaff):
     def feed_animal(self, animal):
         print(f"{self.name} кормит {animal.name}.")
 
+
 class Veterinarian(ZooStaff):
     def heal_animal(self, animal):
         print(f"{self.name} лечит {animal.name}.")
+
 
 class Cleaner(ZooStaff):
     def clean_animal(self, animal):
