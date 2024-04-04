@@ -13,10 +13,10 @@
 # и возможность её загрузки, чтобы у вашего зоопарка было "постоянное состояние" между запусками программы.
 
 class Animal():
-    def __init__(self, name, age):
+    def __init__(self, name, age):#атрибуты
         self.name = name
         self.age = age
-    def make_sound(self):
+    def make_sound(self):#функции
         pass
     def eat(self):
         print(f"{self.name} едят")
@@ -35,18 +35,20 @@ class Reptile(Animal): #рептилии
     def make_sound(self):
         print(f'{self.name} шипит')
 
-class Zoo:
+class Zoo():
     def __init__(self):
         self.animals = []
         self.staff = []
 
     def add_animal(self, animal):
         self.animals.append(animal)
+        print(f'животное {animal} добавлено в зоопарк')
 
     def add_staff(self, staff_member):
         self.staff.append(staff_member)
+        print(f'сотрудник {staff_member} добавлен в зоопарк')
 
-class ZooStaff:
+class ZooStaff():
     def __init__(self, name):
         self.name = name
 
@@ -87,3 +89,4 @@ zoo.add_staff(cleaner)
 keeper.feed_animal(bird)
 vet.heal_animal(mammal)
 cleaner.clean_animal(reptile)
+
